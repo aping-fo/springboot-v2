@@ -24,6 +24,17 @@
 
 <body>
 
+<!-- 顶部通用-->
+<div th:replace="admin/common/html/topMenu :: topMenu(${isribbon})">
+</div>
+<!-- 结束顶部通用 -->
+   
+<!-- 左边菜单栏通用 -->
+<div th:replace="admin/common/html/leftMenu :: leftMenu">
+</div>
+<!-- 结束左边菜单栏通用 -->
+
+
 
 
 <!-- ###############################代码编写出############################### -->
