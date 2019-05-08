@@ -4,7 +4,7 @@
 	<div id="skin-select">
 		<!-- PC端 LOGO -->
 	    <div id="logo">
-	     <h1>用户管理<span>v1</span></h1>
+	     <h1>配置管理<!--<span></span>--></h1>
 	    </div>
 	<!--END PC端 LOGO -->
 	
@@ -33,27 +33,22 @@
 	<!-- 左侧菜单栏 -->
 	    <div class="skin-part">
 	        <div id="tree-wrap">
-	            <div class="side-bar" th:each="muen,muenStat:${session.bootstrapThree.nodes}">
+	            <div class="side-bar" th:if="${session.bootstrapThree!=null&&session.bootstrapThree.nodes!=null}" th:each="muen,muenStat:${session.bootstrapThree.nodes}">
 	                <ul class="topnav menu-left-nest">
 	                    <li>
 	                        <a href="#" style="border-left:0px solid!important;" class="title-menu-left">
-	
 	                            <span  th:text="${muen.text}"></span>
 	                            <i data-toggle="tooltip" th:classappend="${muen.icon}" class="pull-right config-wrap"></i>
-	
 	                        </a>
 	                    </li>
-	                    <th:bolck th:if=${muen.nodes!=null}>
+	                    <th:bolck th:if=${muen!=null&&muen.nodes!=null}>
 	                    <li th:each="caidan,caidanStat:${muen.nodes}">
-	                        <a class="tooltip-tip" th:href="@{${caidan.url}}" target="mainFrame" th:title="${caidan.text}">
+	                        <a class="tooltip-tip" href="javascript:void(0)" th:url="@{${rootPath}+''+${caidan.url}}" th:id="@{'menu_'+${caidan.id}}" th:sname="${caidan.text}" th:title="${caidan.text}">
 	                            <i th:classappend="${caidan.icon}" class=""></i>
 								<span th:text="${caidan.text}">用户管理</span>
 	                 		</a>
 	                    </li>
 	                    </th:bolck>
-	                    
-	
-						
 	                </ul>
 	            </div>
 	        </div>

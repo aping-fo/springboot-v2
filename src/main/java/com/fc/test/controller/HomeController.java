@@ -37,11 +37,22 @@ public class HomeController extends BaseController{
 
 	@ApiOperation(value="首页",notes="首页")
 	@GetMapping("/index")
-	public String index() {
-		return "admin/index";
+	public String index(HttpServletRequest request,Model model) {
+		 try {
+			 if ((null != SecurityUtils.getSubject() && SecurityUtils.getSubject().isAuthenticated()) || SecurityUtils.getSubject().isRemembered()) {
+	          	setTitle(model, new TitleVo("首页", "首页", true,"欢迎进入", true, false));
+	          	//获取菜单栏
+	          	BootstrapThree bootstrapThree=sysPremissionService.getbooBootstrapThreePerm();
+	          	request.getSession().setAttribute("bootstrapThree", bootstrapThree);
+	          	return "admin/index";
+	         } 
+		 }catch (Exception e) {
+			e.printStackTrace();
+		}
+		return "redirect:/login";
 	}
 	
-	@ApiOperation(value="局部刷新区域",notes="局部刷新区域")
+	@ApiOperation(value="首页",notes="首页")
 	@GetMapping("/main")
 	public String main() {
 		return "admin/main";
@@ -57,20 +68,12 @@ public class HomeController extends BaseController{
     public String login(HttpServletRequest request,Model model) {
         try {
             if ((null != SecurityUtils.getSubject() && SecurityUtils.getSubject().isAuthenticated()) || SecurityUtils.getSubject().isRemembered()) {
-            	setTitle(model, new TitleVo("首页", "首页", true,"欢迎进入", true, false));
-            	//获取菜单栏
-            	BootstrapThree bootstrapThree=sysPremissionService.getbooBootstrapThreePerm();
-            	request.getSession().setAttribute("bootstrapThree", bootstrapThree);
-            	return "admin/index";
-            } else {
-            	System.out.println("--进行登录验证..验证开始");
-                return "login";
+            	return "redirect:/index";
             }
-        } catch (Exception e) {
-        		e.printStackTrace();
-        }
+        } catch (Exception e) {}
         return "login";
     }
+	
 	
 	/**
 	 * 用户登陆验证

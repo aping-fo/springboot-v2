@@ -15,8 +15,8 @@ import com.fc.test.mapper.custom.PermissionDao;
 import com.fc.test.model.auto.TsysPremission;
 import com.fc.test.model.auto.TsysPremissionExample;
 import com.fc.test.model.custom.BootstrapThree;
-import com.fc.test.model.custom.Tablepar;
 import com.fc.test.model.custom.PremissionThreeModelVo;
+import com.fc.test.model.custom.Tablepar;
 import com.fc.test.util.SnowflakeIdWorker;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
@@ -233,44 +233,49 @@ public class SysPremissionService implements BaseService<TsysPremission, TsysPre
 	 * @return
 	 */
 	public BootstrapThree getbooBootstrapThreePerm(){
-		PremissionThreeModelVo modelVo= queryThreePrem();
-		TsysPremission home= modelVo.getTsysPremission();
-		List<PremissionThreeModelVo> three_mengls= modelVo.getChildList();
-		List<BootstrapThree> bootstrapThree_mengls=new  ArrayList<BootstrapThree>();
-		for (PremissionThreeModelVo menglx : three_mengls) {
-			TsysPremission mengl= menglx.getTsysPremission();
-			List<BootstrapThree> bootstrapThree_mens=new  ArrayList<BootstrapThree>();
-			
-			List<PremissionThreeModelVo> three_mens=menglx.getChildList();
-			for (PremissionThreeModelVo buttonx : three_mens) {
-				TsysPremission button=  buttonx.getTsysPremission();
-				List<PremissionThreeModelVo> three_buttons=buttonx.getChildList();
-				List<BootstrapThree> bootstrapThree_buttons=new  ArrayList<BootstrapThree>();
-				
-				for (PremissionThreeModelVo lasts : three_buttons) {
-					TsysPremission last= lasts.getTsysPremission();
-					BootstrapThree three_button=new BootstrapThree(last.getName(), last.getIcon(),"",last.getId(),last.getUrl(),null);
-					bootstrapThree_buttons.add(three_button);
-				}
-				BootstrapThree bootstrapThree_button=new BootstrapThree(button.getName(), button.getIcon(),"",button.getId(),button.getUrl(),bootstrapThree_buttons);
-				bootstrapThree_mens.add(bootstrapThree_button);
-			}
-			BootstrapThree bootstrapThree_mengl=new BootstrapThree(mengl.getName(), mengl.getIcon(),"",mengl.getId(),mengl.getUrl() ,bootstrapThree_mens);
-			bootstrapThree_mengls.add(bootstrapThree_mengl);
+		List<BootstrapThree> treeList = new ArrayList<BootstrapThree>();
+		List<TsysPremission> menuList =  getall();
+		treeList = getbooBootstrapThreePerm(menuList,"0");
+		if(treeList!=null&&treeList.size()==1) {
+			return treeList.get(0);
 		}
-		
-		BootstrapThree bootstrapThree=new BootstrapThree(home.getName(), home.getIcon(),"",home.getId(), home.getUrl(),bootstrapThree_mengls);
-		
-		return bootstrapThree;
+		return new BootstrapThree("菜单", "fa fa-home", "", "-1","###",treeList);
 	}
 	
+	
+	
+	/**
+	 * 获取树
+	 * @param menuList
+	 * @param parentId
+	 * @return
+	 */
+	private static List<BootstrapThree> getbooBootstrapThreePerm(List<TsysPremission> menuList,String parentId){
+		List<BootstrapThree> treeList = new ArrayList<>();
+		List<BootstrapThree> childList = null;
+		for(TsysPremission p : menuList) {
+			p.setPid(p.getPid()==null||p.getPid().trim().equals("")?"0":p.getPid());
+			if(p.getPid().toString().trim().equals(parentId)) {
+				if(p.getChildCount()!=null&&p.getChildCount()>0) {
+					childList = getbooBootstrapThreePerm(menuList, String.valueOf(p.getId()));
+				}
+				BootstrapThree bootstrapTree = new BootstrapThree(p.getName(), p.getIcon(), "", String.valueOf(p.getId()), p.getUrl(),childList);
+				treeList.add(bootstrapTree);
+				childList = null;
+			}
+		}
+		return treeList.size() >0 ? treeList : null;
+	}
 	
 	/**
 	 * 获取所有权限
 	 * @return
 	 */
 	public List<TsysPremission> getall(){
-		return  tsysPremissionMapper.selectByExample(new TsysPremissionExample());
+		TsysPremissionExample example = new TsysPremissionExample();
+		TsysPremissionExample.Criteria criteria = example.createCriteria();
+		criteria.andTypeLessThanOrEqualTo(1);
+		return  tsysPremissionMapper.selectByExample(example);
 	}
 	
 	
