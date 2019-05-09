@@ -15,7 +15,6 @@ import com.fc.test.mapper.custom.PermissionDao;
 import com.fc.test.model.auto.TsysPremission;
 import com.fc.test.model.auto.TsysPremissionExample;
 import com.fc.test.model.custom.BootstrapThree;
-import com.fc.test.model.custom.PremissionThreeModelVo;
 import com.fc.test.model.custom.Tablepar;
 import com.fc.test.util.SnowflakeIdWorker;
 import com.github.pagehelper.PageHelper;
@@ -171,63 +170,6 @@ public class SysPremissionService implements BaseService<TsysPremission, TsysPre
 		return tsysPremissionMapper.selectByExample(example);
 	}
 	
-
-	/**
-	 * 获取权限树
-	 * @return
-	 */
-	public PremissionThreeModelVo queryThreePrem(){
-		//查询出首页
-		TsysPremission homeList=queryPid("0",0).get(0);
-		//赋值首页信息
-		PremissionThreeModelVo homeTmv=new PremissionThreeModelVo();
-		homeTmv.setTsysPremission(homeList);
-		//查询出所有的菜单栏管理分类
-		List<TsysPremission> menuGlList=queryPid(homeList.getId(),0);
-		List<PremissionThreeModelVo> menulanGlVos=new ArrayList<PremissionThreeModelVo>(); 
-		for (TsysPremission tsysPremission_menuGl : menuGlList) {//菜单栏管理
-			PremissionThreeModelVo menulanGlVo=new PremissionThreeModelVo();
-			
-			
-			List<PremissionThreeModelVo> menuVos=new ArrayList<PremissionThreeModelVo>();
-			//查出所有的菜单栏
-			List<TsysPremission> menuList=queryPid(tsysPremission_menuGl.getId(),1);
-			
-			for (TsysPremission tsysPremission_menu : menuList) {//菜单栏
-				PremissionThreeModelVo menuVo=new PremissionThreeModelVo();
-				
-				List<PremissionThreeModelVo> buttonsVos=new ArrayList<PremissionThreeModelVo>();
-				//查询所有的按钮
-				List<TsysPremission> buttonList=queryPid(tsysPremission_menu.getId(),2);
-				for (TsysPremission tsysPremission_button : buttonList) {//按钮
-					PremissionThreeModelVo buttonVo=new PremissionThreeModelVo();
-
-					//按钮赋值
-					buttonVo.setTsysPremission(tsysPremission_button);
-					buttonVo.setChildList(null);
-					//按钮添加子集
-					buttonsVos.add(buttonVo);
-				}
-				menuVo.setChildList(buttonsVos);
-				//菜单栏添加子集
-				menuVos.add(menuVo);
-				//菜单栏赋值
-				menuVo.setTsysPremission(tsysPremission_menu);
-				
-			}
-			//菜单栏管理添加子集
-			menulanGlVo.setChildList(menuVos);
-			//赋值菜单栏
-			menulanGlVo.setTsysPremission(tsysPremission_menuGl);
-			
-			//菜单栏管理赋值
-			menulanGlVos.add(menulanGlVo);
-		}
-		//首页填充菜单栏分类
-		homeTmv.setChildList(menulanGlVos);
-		return homeTmv;
-	}
-	
 	/**
 	 * 获取转换成bootstarp的权限数据
 	 * @return
@@ -308,31 +250,33 @@ public class SysPremissionService implements BaseService<TsysPremission, TsysPre
 		List<TsysPremission> myTsysPremissions = permissionDao.queryRoleId(roleid);
 		// 获取所有的权限
 		BootstrapThree sysPremissions = getbooBootstrapThreePerm();
-		if (ifpermissions(myTsysPremissions, sysPremissions)) {
-			sysPremissions.setState(map);
-		}
-		List<BootstrapThree> menugl = sysPremissions.getNodes();
-		for (BootstrapThree menuglbootstrapThree : menugl) {
-			if (ifpermissions(myTsysPremissions, menuglbootstrapThree)) {// 菜单栏管理设置
-				menuglbootstrapThree.setState(map);
-			}
-			List<BootstrapThree> menu = menuglbootstrapThree.getNodes();
-			for (BootstrapThree menubootstrapThree : menu) {
-				if (ifpermissions(myTsysPremissions, menubootstrapThree)) {// 菜单栏设置
-					menubootstrapThree.setState(map);
-				}
-
-				List<BootstrapThree> buttons = menubootstrapThree.getNodes();
-				for (BootstrapThree button : buttons) {
-					if (ifpermissions(myTsysPremissions, button)) {// 按钮设置
-						button.setState(map);
-					}
-				}
-			}
-
-		}
+		iterationCheckPre(sysPremissions, myTsysPremissions, map);
 		return sysPremissions;
 
+	}
+	
+	/**
+	 * 循环迭代获取所有权限
+	 * @param pboostrapTree
+	 * @param myTsysPremissions
+	 * @param map
+	 */
+	public void iterationCheckPre(BootstrapThree pboostrapTree,List<TsysPremission> myTsysPremissions,Map<String, Object> map) {
+		if(null!=pboostrapTree) {
+			if (ifpermissions(myTsysPremissions, pboostrapTree)) {
+				pboostrapTree.setState(map);
+			}
+			List<BootstrapThree> bootstrapTreeList = pboostrapTree.getNodes();
+			if(null!=bootstrapTreeList&&!bootstrapTreeList.isEmpty()) {
+				for(BootstrapThree bootstrapTree : bootstrapTreeList) {
+					if (ifpermissions(myTsysPremissions, bootstrapTree)) {// 菜单栏设置
+						bootstrapTree.setState(map);
+					}
+					//检查子节点
+					iterationCheckPre(bootstrapTree, myTsysPremissions, map);
+				}
+			}
+		}
 	}
 	
 	
