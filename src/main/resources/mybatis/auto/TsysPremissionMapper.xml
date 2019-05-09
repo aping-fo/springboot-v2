@@ -72,7 +72,7 @@
     </where>
   </sql>
   <sql id="Base_Column_List">
-    id, name, descripion, url, pid, perms, type, icon, order_num, order_num,(select count(1) from t_sys_premission where type in (0,1) and pid=a.id) childcount
+    id, name, descripion, url, pid, perms, type, icon, order_num, order_num,(select count(1) from t_sys_premission where pid=a.id) childcount
   </sql>
   <select id="selectByExample" parameterType="com.fc.test.model.auto.TsysPremissionExample" resultMap="BaseResultMap">
     select

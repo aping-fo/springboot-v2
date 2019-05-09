@@ -215,8 +215,6 @@ public class SysPremissionService implements BaseService<TsysPremission, TsysPre
 	 */
 	public List<TsysPremission> getall(){
 		TsysPremissionExample example = new TsysPremissionExample();
-		TsysPremissionExample.Criteria criteria = example.createCriteria();
-		criteria.andTypeLessThanOrEqualTo(1);
 		return  tsysPremissionMapper.selectByExample(example);
 	}
 	
